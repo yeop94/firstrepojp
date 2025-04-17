@@ -756,15 +756,20 @@ def show_city_map(city, hotspots):
     fig.add_trace(go.Scattermapbox(
         lat=df['lat'],
         lon=df['lon'],
-        mode='markers+text',
+        mode='markers+text',  # 마커와 텍스트 모두 표시
         marker=dict(
-            size=12,
+            size=10,
             color='#2E8B57',
             opacity=0.9
         ),
-        text=df['name'],
-        textposition="top center",
-        textfont=dict(size=11, family="Arial", color="black"),
+        text=df['name'],  # 항상 표시할 텍스트
+        textposition="top center",  # 텍스트 위치 (마커 위에 표시)
+        textfont=dict(
+            size=11, 
+            family="Arial", 
+            color="black",
+            bgcolor="rgba(255, 255, 255, 0.5)"  # 배경색 추가로 가독성 향상
+        ),
         hovertext=df['name'],
         customdata=df['description'],
         hovertemplate=hovertemplate,
