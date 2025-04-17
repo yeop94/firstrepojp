@@ -724,6 +724,10 @@ weather_info = {
         '겨울(12-2월)': "🌈 일본 본토에 비해 매우 온화합니다(15-20°C). 다만 바람이 강하고 비가 내리는 날이 있으며, 해수욕은 어려울 수 있어요."
     }
 }
+import streamlit as st
+import plotly.express as px
+import plotly.graph_objects as go
+import pandas as pd
 
 def show_city_map(city, hotspots):
     lat, lon = city_coordinates[city]
@@ -742,59 +746,61 @@ def show_city_map(city, hotspots):
         'description': spot_tips,
     })
     
-    # 지도 생성
-    fig = px.scatter_mapbox(
-        df, 
-        lat="lat", 
-        lon="lon", 
-        hover_name="name",
-        hover_data={"description": True, "lat": False, "lon": False},
-        zoom=12,
-        height=600,
-        size=[15] * len(df),
-        color_discrete_sequence=["#2E8B57"],  # 바다색과 어울리는 진한 녹색
-        opacity=0.9,
-        mapbox_style="carto-positron"  # 깔끔한 밝은 스타일
-    )
+    # hover_template 설정 - 커스텀 호버 정보
+    hovertemplate = '<b>%{hovertext}</b><br>%{customdata}<extra></extra>'
     
-    # 도시 중심 마커 추가
-    fig.add_trace(
-        px.scatter_mapbox(
-            pd.DataFrame({"lat": [lat], "lon": [lon], "name": [f"{city} 중심"]}),
-            lat="lat",
-            lon="lon",
-            hover_name="name",
-            size=[20],
-            color_discrete_sequence=["#FF5252"],  # 밝은 빨간색
-        ).data[0]
-    )
+    # 지도 생성 (기본 맵)
+    fig = go.Figure()
     
-    # 마커에 텍스트 레이블 추가 (항상 표시)
-    fig.add_trace(
-        px.scatter_mapbox(
-            df,
-            lat="lat",
-            lon="lon",
-            text="name",
-            size=[0] * len(df),  # 점 크기는 0으로 설정해 보이지 않게
-            opacity=0
-        ).data[0]
-    )
-    
-    # 텍스트 레이블 스타일 설정
-    fig.update_traces(
+    # 핫플레이스 마커 추가
+    fig.add_trace(go.Scattermapbox(
+        lat=df['lat'],
+        lon=df['lon'],
+        mode='markers+text',
+        marker=dict(
+            size=12,
+            color='#2E8B57',
+            opacity=0.9
+        ),
+        text=df['name'],
         textposition="top center",
         textfont=dict(size=11, family="Arial", color="black"),
-        mode="text+markers",
-        selector=dict(opacity=0)
-    )
+        hovertext=df['name'],
+        customdata=df['description'],
+        hovertemplate=hovertemplate,
+        name='핫플레이스'
+    ))
     
-    # 레이아웃 설정
+    # 도시 중심 마커 추가
+    fig.add_trace(go.Scattermapbox(
+        lat=[lat],
+        lon=[lon],
+        mode='markers',
+        marker=dict(
+            size=15,
+            color='#FF5252',
+            opacity=0.9
+        ),
+        hovertext=[f"{city} 중심"],
+        hovertemplate='<b>%{hovertext}</b><extra></extra>',
+        name='도시 중심'
+    ))
+    
+    # 지도 레이아웃 설정
     fig.update_layout(
-        margin={"r": 0, "t": 0, "l": 0, "b": 0},
         mapbox=dict(
+            style="carto-positron",  # 기본 명칭이 보이는 맵 스타일
             center=dict(lat=lat, lon=lon),
             zoom=12
+        ),
+        margin={"r": 0, "t": 0, "l": 0, "b": 0},
+        height=600,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=0.02,
+            xanchor="right",
+            x=0.99
         )
     )
     
@@ -829,6 +835,7 @@ def main():
         st.plotly_chart(fig, use_container_width=True)
         
         # 아래에 핫플레이스 목록 표시 (지도에서 식별하기 쉽도록)
+        st.subheader("🌟 주요 핫플레이스")
         col1, col2 = st.columns(2)
         spots = hotspots.get(city, [])
         half = len(spots) // 2 + len(spots) % 2
@@ -836,13 +843,13 @@ def main():
         with col1:
             for i in range(half):
                 if i < len(spots):
-                    with st.expander(f"🌟 {spots[i][0]}"):
+                    with st.expander(f"{spots[i][0]}"):
                         st.write(spots[i][3])
         
         with col2:
             for i in range(half, len(spots)):
                 if i < len(spots):
-                    with st.expander(f"🌟 {spots[i][0]}"):
+                    with st.expander(f"{spots[i][0]}"):
                         st.write(spots[i][3])
     
     with tab2:
