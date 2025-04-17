@@ -767,15 +767,14 @@ def show_city_map(city, hotspots):
         textfont=dict(
             size=11, 
             family="Arial", 
-            color="black",
-            bgcolor="rgba(255, 255, 255, 0.5)"  # 배경색 추가로 가독성 향상
+            color="black"
         ),
         hovertext=df['name'],
         customdata=df['description'],
         hovertemplate=hovertemplate,
         name='핫플레이스'
     ))
-    
+        
     # 도시 중심 마커 추가
     fig.add_trace(go.Scattermapbox(
         lat=[lat],
