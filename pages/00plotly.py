@@ -793,7 +793,7 @@ def show_city_map(city, hotspots):
     # 지도 레이아웃 설정
     fig.update_layout(
         mapbox=dict(
-            style="carto-positron",  # 기본 명칭이 보이는 맵 스타일
+            style="open-street-map",  # 기본 지명이 잘 표시되는 스타일
             center=dict(lat=lat, lon=lon),
             zoom=12
         ),
